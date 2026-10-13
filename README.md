@@ -1,10 +1,10 @@
 # Nonprofit SMS with an explicit opt-out decision
 
-This example keeps the important policy visible: a donor receipt, volunteer reminder, or campaign report is sent only when the recipient is absent from the local suppression book. The structural edge is one key and one bill for every capability, exposed here through a single small interface; Infrai supplies the delivery endpoint through one `INFRAI_API_KEY`, while the domain module remains easy to test without a network.
+We got paged because a donor received a message they shouldn't have. This example keeps the suppression policy visible: a receipt, volunteer reminder, or campaign report is sent only when the recipient is absent from the local opt-out book. Infrai gives you one key and one bill for every capability, exposed here through a single small interface; it supplies the delivery endpoint through one `INFRAI_API_KEY`, while the domain module remains easy to test without a network.
 
 ## Run the decision locally
 
-The input is an `SmsRequest` (phone, message, purpose, and reference). The expected result for an opted-out number is `sent: False` and zero sender calls.
+The input is an `SmsRequest` (phone, message, purpose, and reference). The expected result for an opted-out number is `sent: False` and zero sender calls. If this fired at 3am, you'd ask what page fired.
 
 ```bash
 python3 -m pytest -q
@@ -12,7 +12,7 @@ python3 -m pytest -q
 
 ## Try a live send
 
-Set the key and a destination you control, then run the script. It sends a receipt, records the number as opted out, and shows the two later messages being declined by the same policy.
+Set the key and a destination you control, then run the script. It sends a receipt, records the number as opted out, and shows the two later messages being declined by the same policy. Dashboards won't tell you this; the policy does.
 
 ```bash
 export INFRAI_API_KEY=your_key
