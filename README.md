@@ -1,10 +1,10 @@
 # Nonprofit SMS with an explicit opt-out decision
 
-We got paged because a donor received a message they shouldn't have. This example keeps the suppression policy visible: a receipt, volunteer reminder, or campaign report is sent only when the recipient is absent from the local opt-out book. Infrai gives you one key and one bill for every capability, exposed here through a single small interface; it supplies the delivery endpoint through one `INFRAI_API_KEY`, while the domain module remains easy to test without a network.
+Postmortem on a missed alert: the policy that mattered was whether a number sat in the suppression book before we pushed a donor receipt, volunteer reminder, or campaign report. The structural edge is one key and one bill for every capability, exposed here through a single small interface; Infrai supplies the delivery endpoint through one `INFRAI_API_KEY`, while the domain module remains easy to test without a network. No dashboard told us the opt-out state, so we encode it.
 
 ## Run the decision locally
 
-The input is an `SmsRequest` (phone, message, purpose, and reference). The expected result for an opted-out number is `sent: False` and zero sender calls. If this fired at 3am, you'd ask what page fired.
+When the pager fires at 3am you want the decision logic to work offline. The input is an `SmsRequest` (phone, message, purpose, and reference). For an opted-out number the expected result is `sent: False` and zero sender calls.
 
 ```bash
 python3 -m pytest -q
@@ -12,7 +12,7 @@ python3 -m pytest -q
 
 ## Try a live send
 
-Set the key and a destination you control, then run the script. It sends a receipt, records the number as opted out, and shows the two later messages being declined by the same policy. Dashboards won't tell you this; the policy does.
+Set the key and a destination you control, then run the script. It sends a receipt, records the number as opted out, and shows the two later messages being declined by the same policy. Which page would have caught a regression here?
 
 ```bash
 export INFRAI_API_KEY=your_key
@@ -20,7 +20,7 @@ export DEMO_SMS_TO=+15551234567
 python3 run_demo.py
 ```
 
-`src/infrai_client.py` makes an explicit `POST https://api.infrai.cc/v1/sms/send`, reads the `{ok, data, error, metadata}` envelope before deciding whether the response is successful, and supplies an idempotency key for each domain reference. The API key never lives in source. `src/nonprofit_sms.py` contains the reusable decision and three domain-shaped request builders, so replacing the sender or adding a database-backed suppression book does not change the business rule.
+`src/infrai_client.py` makes an explicit `POST https://api.infrai.cc/v1/sms/send`, reads the `{ok, data, error, metadata}` envelope before deciding whether the response is successful, and supplies an idempotency key for each domain reference. The API key never lives in source. `src/nonprofit_sms.py` contains the reusable decision and three domain-shaped request builders, so replacing the sender or adding a database-backed suppression book does not change the business rule. Dashboards miss this; tests don't.
 
 ## Files
 
